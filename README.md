@@ -1,5 +1,7 @@
 # Freewrite Web
 
+![Freewrite](https://i.imgur.com/2ucbtff.gif)
+
 thanks to [farzaa](https://github.com/farzaa/freewrite) for the original freewrite app and for the inspiration
 please check out his original [repo](https://github.com/farzaa/freewrite) and the opening text:
 
@@ -122,7 +124,6 @@ Enjoy everyone!!
 
 – Farza"
 
-![Freewrite](https://i.imgur.com/2ucbtff.gif)
 
 ## Features
 
