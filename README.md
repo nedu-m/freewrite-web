@@ -162,6 +162,5 @@ Contributions are welcome! If you want to make an addition or fix a bug:
 4. Push to the branch
 5. Create a Pull Request
 
-## License
+(feel free to also remix and create your own version)
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
