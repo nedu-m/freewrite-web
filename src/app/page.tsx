@@ -14,6 +14,7 @@ export default function Home() {
   const [showControls, setShowControls] = useState<boolean>(true);
   const [editingTimer, setEditingTimer] = useState<boolean>(false);
   const [timerInput, setTimerInput] = useState<string>("15:00");
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [placeholderText, setPlaceholderText] = useState<string>("");
   const resetTimerRef = useRef<boolean>(false);
@@ -295,6 +296,12 @@ export default function Home() {
       setShowSidebar(savedSidebarState === "true");
     }
 
+    // Load dark mode state from localStorage
+    const savedDarkMode = localStorage.getItem("freewrite-dark-mode");
+    if (savedDarkMode !== null) {
+      setDarkMode(savedDarkMode === "true");
+    }
+
     // Set random placeholder
     setPlaceholderText(
       placeholderOptions[Math.floor(Math.random() * placeholderOptions.length)]
@@ -311,6 +318,16 @@ export default function Home() {
     localStorage.setItem("freewrite-sidebar-visible", showSidebar.toString());
   }, [showSidebar]);
 
+  // Save dark mode state when it changes
+  useEffect(() => {
+    localStorage.setItem("freewrite-dark-mode", darkMode.toString());
+  }, [darkMode]);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   // Calculate line height based on font size
   const lineHeight = fontSize * 1.5;
 
@@ -322,21 +339,33 @@ export default function Home() {
   }, [timeRemaining, editingTimer]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-gray-800">
+    <div
+      className={`flex h-screen w-screen overflow-hidden ${
+        darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
+      }`}
+    >
       {/* Sidebar */}
       <div
-        className={`w-64 border-r border-gray-200 transition-all duration-300 ${
+        className={`w-64 border-r ${
+          darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
+        } transition-all duration-300 ${
           showSidebar ? "translate-x-0" : "-translate-x-full"
-        } absolute h-full bg-white z-10 ${
+        } absolute h-full z-10 ${
           showSidebar ? "block" : "hidden md:block md:hidden"
         }`}
       >
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+        <div
+          className={`p-4 border-b ${
+            darkMode ? "border-gray-700" : "border-gray-200"
+          } flex justify-between items-center`}
+        >
           <h2 className="text-lg font-medium">Entries</h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={createNewEntry}
-              className="p-1 rounded hover:bg-gray-100"
+              className={`p-1 rounded ${
+                darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              }`}
               title="New Entry"
             >
               <svg
@@ -355,7 +384,9 @@ export default function Home() {
             {/* Hide sidebar button (desktop only) */}
             <button
               onClick={() => setShowSidebar(false)}
-              className="p-1 rounded hover:bg-gray-100 hidden md:block"
+              className={`p-1 rounded ${
+                darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              } hidden md:block`}
               title="Hide sidebar"
             >
               <svg
@@ -377,21 +408,37 @@ export default function Home() {
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className={`p-3 border-b border-gray-100 cursor-pointer ${
+              className={`p-3 border-b ${
+                darkMode ? "border-gray-700" : "border-gray-100"
+              } cursor-pointer ${
                 selectedEntryId === entry.id
-                  ? "bg-gray-100"
+                  ? darkMode
+                    ? "bg-gray-700"
+                    : "bg-gray-100"
+                  : darkMode
+                  ? "hover:bg-gray-700"
                   : "hover:bg-gray-50"
               }`}
               onClick={() => loadEntry(entry.id)}
             >
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">{entry.date}</span>
+                <span
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {entry.date}
+                </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteEntry(entry.id);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className={`${
+                    darkMode
+                      ? "text-gray-500 hover:text-gray-300"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
                   title="Delete entry"
                 >
                   <svg
@@ -408,7 +455,11 @@ export default function Home() {
                   </svg>
                 </button>
               </div>
-              <p className="text-sm mt-1 text-gray-600 truncate">
+              <p
+                className={`text-sm mt-1 ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                } truncate`}
+              >
                 {entry.previewText || "Empty entry"}
               </p>
             </div>
@@ -420,7 +471,9 @@ export default function Home() {
       <div className="flex-1 flex flex-col relative">
         {/* Sidebar peek indicator (only visible when sidebar is hidden on desktop) */}
         <div
-          className={`absolute left-0 top-20 h-24 w-1 bg-gray-200 cursor-pointer rounded-r hover:w-2 transition-all duration-200 ${
+          className={`absolute left-0 top-20 h-24 w-1 ${
+            darkMode ? "bg-gray-700" : "bg-gray-200"
+          } cursor-pointer rounded-r hover:w-2 transition-all duration-200 ${
             !showSidebar ? "md:block hidden" : "hidden"
           }`}
           onClick={() => setShowSidebar(true)}
@@ -434,12 +487,16 @@ export default function Home() {
               ref={textAreaRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="w-full h-full resize-none outline-none bg-white"
+              className={`w-full h-full resize-none outline-none ${
+                darkMode
+                  ? "bg-gray-900 text-gray-200"
+                  : "bg-white text-gray-800"
+              }`}
               style={{
                 fontFamily,
                 fontSize: `${fontSize}px`,
                 lineHeight: `${lineHeight}px`,
-                background: "white",
+                background: darkMode ? "#111827" : "white",
               }}
               placeholder={placeholderText}
               spellCheck={false}
@@ -449,7 +506,9 @@ export default function Home() {
 
         {/* Bottom controls */}
         <div
-          className={`border-t border-gray-200 p-3 flex justify-between items-center transition-opacity duration-300 ${
+          className={`border-t ${
+            darkMode ? "border-gray-700" : "border-gray-200"
+          } p-3 flex justify-between items-center transition-opacity duration-300 ${
             showControls ? "opacity-100" : "opacity-0"
           }`}
           onMouseEnter={() => setShowControls(true)}
@@ -461,7 +520,9 @@ export default function Home() {
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
-                className="text-sm bg-transparent p-1"
+                className={`text-sm ${
+                  darkMode ? "bg-gray-800 text-gray-200" : "bg-transparent"
+                } p-1`}
               >
                 {fontSizeOptions.map((size) => (
                   <option key={size} value={size}>
@@ -473,7 +534,9 @@ export default function Home() {
               <select
                 value={fontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
-                className="text-sm border-0 ring-0 bg-transparent rounded-md p-1"
+                className={`text-sm border-0 ring-0 ${
+                  darkMode ? "bg-gray-800 text-gray-200" : "bg-transparent"
+                } rounded-md p-1`}
               >
                 {fontOptions.map((font) => (
                   <option key={font.value} value={font.value}>
@@ -495,13 +558,19 @@ export default function Home() {
                   onChange={handleTimerInputChange}
                   onBlur={handleTimerInputBlur}
                   onKeyDown={handleTimerInputKeyPress}
-                  className="timer-input"
+                  className={`timer-input ${
+                    darkMode ? "bg-gray-800 text-gray-200" : ""
+                  }`}
                   autoFocus
                 />
               ) : (
                 <span
                   className={`text-sm cursor-pointer hover:underline ${
-                    timerRunning ? "text-gray-600 font-semibold" : ""
+                    timerRunning
+                      ? darkMode
+                        ? "text-gray-300 font-semibold"
+                        : "text-gray-600 font-semibold"
+                      : ""
                   }`}
                   onClick={() => !timerRunning && setEditingTimer(true)}
                   title={
@@ -516,7 +585,11 @@ export default function Home() {
               {!timerRunning ? (
                 <button
                   onClick={startTimer}
-                  className="text-gray-500 hover:text-gray-700"
+                  className={`${
+                    darkMode
+                      ? "text-gray-400 hover:text-gray-200"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                   title="Start timer"
                 >
                   <svg
@@ -535,7 +608,11 @@ export default function Home() {
               ) : (
                 <button
                   onClick={stopTimer}
-                  className="text-gray-500 hover:text-gray-700"
+                  className={`${
+                    darkMode
+                      ? "text-gray-400 hover:text-gray-200"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                   title="Stop timer"
                 >
                   <svg
@@ -554,7 +631,11 @@ export default function Home() {
               )}
               <button
                 onClick={resetTimer}
-                className="text-gray-500 hover:text-gray-700"
+                className={`${
+                  darkMode
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
                 title="Reset and start timer"
               >
                 <svg
@@ -572,9 +653,48 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Toggle sidebar button (moved here) */}
+            {/* Dark Mode toggle */}
             <button
-              className="text-gray-500 hover:text-gray-700 p-1"
+              className={`${
+                darkMode
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              } p-1`}
+              onClick={toggleDarkMode}
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Toggle sidebar button */}
+            <button
+              className={`${
+                darkMode
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              } p-1`}
               onClick={() => setShowSidebar(!showSidebar)}
               title={showSidebar ? "Hide entries" : "Show entries"}
             >
@@ -598,7 +718,11 @@ export default function Home() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={shareWithChatGPT}
-                className="text-gray-500 hover:text-gray-700"
+                className={`${
+                  darkMode
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
                 title="Share with ChatGPT"
               >
                 <svg
@@ -612,7 +736,11 @@ export default function Home() {
               </button>
               <button
                 onClick={shareWithClaude}
-                className="text-gray-500 hover:text-gray-700"
+                className={`${
+                  darkMode
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
                 title="Share with Claude"
               >
                 <svg
