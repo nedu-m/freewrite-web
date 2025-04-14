@@ -17,6 +17,7 @@ export default function Home() {
   const [isFullscreen, setIsFullScreen] = useState<boolean>(false);
   const [timerInput, setTimerInput] = useState<string>("15:00");
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [rtlMode, setRtlMode] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [placeholderText, setPlaceholderText] = useState<string>("");
   const resetTimerRef = useRef<boolean>(false);
@@ -344,6 +345,12 @@ export default function Home() {
       setDarkMode(savedDarkMode === "true");
     }
 
+    // Load RTL mode state from localStorage
+    const savedRtlMode = localStorage.getItem("freewrite-rtl-mode");
+    if (savedRtlMode !== null) {
+      setRtlMode(savedRtlMode === "true");
+    }
+
     // Set random placeholder
     setPlaceholderText(
       placeholderOptions[Math.floor(Math.random() * placeholderOptions.length)]
@@ -365,9 +372,19 @@ export default function Home() {
     localStorage.setItem("freewrite-dark-mode", darkMode.toString());
   }, [darkMode]);
 
+  // Save RTL mode state when it changes
+  useEffect(() => {
+    localStorage.setItem("freewrite-rtl-mode", rtlMode.toString());
+  }, [rtlMode]);
+
   // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  // Toggle RTL mode
+  const toggleRtlMode = () => {
+    setRtlMode(!rtlMode);
   };
 
   // Calculate line height based on font size
@@ -556,7 +573,7 @@ export default function Home() {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
                       clipRule="evenodd"
                     />
                   </svg>
@@ -609,6 +626,8 @@ export default function Home() {
                 lineHeight: `${lineHeight}px`,
                 color: darkMode ? "white" : "black",
                 background: darkMode ? "#111827" : "white",
+                direction: rtlMode ? "rtl" : "ltr",
+                textAlign: rtlMode ? "right" : "left",
               }}
               placeholder={placeholderText}
               spellCheck={false}
@@ -891,6 +910,53 @@ export default function Home() {
                   <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                 </svg>
               )}
+            </button>
+
+            {/* RTL toggle button */}
+            <button
+              className={`${
+                darkMode
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              } p-1 relative group`}
+              onClick={toggleRtlMode}
+              title={rtlMode ? "Switch to LTR" : "Switch to RTL"}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {rtlMode ? (
+                  // LTR icon (when currently in RTL mode)
+                  <>
+                    <path d="M3 8h13a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4H3" />
+                    <path d="m8 4-4 4 4 4" />
+                  </>
+                ) : (
+                  // RTL icon (when currently in LTR mode)
+                  <>
+                    <path d="M21 8h-13a4 4 0 0 0-4 4v0a4 4 0 0 0 4 4h13" />
+                    <path d="m16 4 4 4-4 4" />
+                  </>
+                )}
+              </svg>
+              <span
+                className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium ${
+                  darkMode
+                    ? "bg-gray-800 text-gray-100"
+                    : "bg-white text-gray-900"
+                } rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border ${
+                  darkMode ? "border-gray-700" : "border-gray-200"
+                }`}
+              >
+                {rtlMode ? "Left-to-Right" : "Right-to-Left"}
+              </span>
             </button>
 
             {/* Toggle sidebar button */}
