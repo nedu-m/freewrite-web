@@ -13,11 +13,14 @@ export default function Home() {
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
   const [showControls, setShowControls] = useState<boolean>(true);
   const [editingTimer, setEditingTimer] = useState<boolean>(false);
+  const [backspaceDisabled, setBackspaceDisabled] = useState<boolean>(false);
+  const [isFullscreen, setIsFullScreen] = useState<boolean>(false);
   const [timerInput, setTimerInput] = useState<string>("15:00");
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [placeholderText, setPlaceholderText] = useState<string>("");
   const resetTimerRef = useRef<boolean>(false);
+
   const [lastSetDuration, setLastSetDuration] = useState<number>(900); // Track the last user-set duration
 
   const placeholderOptions = [
@@ -253,6 +256,45 @@ export default function Home() {
     }, 100);
   };
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement
+        .requestFullscreen()
+        .catch((err) => console.error("Failed to enter fullscreen", err));
+    } else {
+      document
+        .exitFullscreen()
+        .catch((err) => console.error("Failed to exit fullscreen", err));
+    }
+  };
+
+  // Load disabled backspace localStorage settings.
+  useEffect(() => {
+    const stored = localStorage.getItem("freewrite-backspace-disabled");
+    if (stored !== null) {
+      setBackspaceDisabled(stored === "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "freewrite-backspace-disabled",
+      backspaceDisabled.toString()
+    );
+  }, [backspaceDisabled]);
+
+  //UI in sync even when exit fullscreen manually
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   // Effect for timer
   useEffect(() => {
     // Initialize interval outside the conditional
@@ -344,6 +386,41 @@ export default function Home() {
         darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
       }`}
     >
+      <button
+        onClick={toggleFullScreen}
+        className={`absolute top-4 right-4 z-50 p-2 rounded-md shadow hover:bg-opacity-80 transition ${
+          darkMode
+            ? "bg-gray-800 text-gray-200 border border-gray-700"
+            : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
+        }`}
+        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+      >
+        {isFullscreen ? (
+          // Exit fullscreen icon
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-fullscreen-exit"
+            viewBox="0 0 16 16"
+          >
+            <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5m5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5M0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5m10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0z" />
+          </svg>
+        ) : (
+          // Enter fullscreen icon
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-fullscreen"
+            viewBox="0 0 16 16"
+          >
+            <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5M.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5" />
+          </svg>
+        )}
+      </button>
       {/* Sidebar */}
       <div
         className={`w-64 border-r ${
@@ -500,6 +577,11 @@ export default function Home() {
               }}
               placeholder={placeholderText}
               spellCheck={false}
+              onKeyDown={(e) => {
+                if (backspaceDisabled && e.key === "Backspace") {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
         </div>
@@ -652,6 +734,62 @@ export default function Home() {
                 </svg>
               </button>
             </div>
+
+            {/* Backspace toggle button */}
+            <button
+              onClick={() => setBackspaceDisabled(!backspaceDisabled)}
+              className={`${
+                darkMode
+                  ? "text-gray-400 hover:text-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              } p-1 relative group`}
+              title={
+                backspaceDisabled
+                  ? "Backspace is currently disabled. Click to enable."
+                  : "Backspace is currently enabled. Click to disable."
+              }
+            >
+              {backspaceDisabled ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M6.707 4.879A3 3 0 018.828 4H15a3 3 0 013 3v6a3 3 0 01-3 3H8.828a3 3 0 01-2.12-.879l-4.415-4.414a1 1 0 010-1.414l4.414-4.414zm4 2.414a1 1 0 00-1.414 1.414L10.586 10l-1.293 1.293a1 1 0 101.414 1.414L12 11.414l1.293 1.293a1 1 0 001.414-1.414L13.414 10l1.293-1.293a1 1 0 00-1.414-1.414L12 8.586l-1.293-1.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M6.707 4.879A3 3 0 018.828 4H15a3 3 0 013 3v6a3 3 0 01-3 3H8.828a3 3 0 01-2.12-.879l-4.415-4.414a1 1 0 010-1.414l4.414-4.414zM12.172 4H15a1 1 0 011 1v6a1 1 0 01-1 1H8.828a1 1 0 01-.707-.293L4.414 8l3.707-3.707A1 1 0 018.828 4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+              <span
+                className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium ${
+                  darkMode
+                    ? "bg-gray-800 text-gray-100"
+                    : "bg-white text-gray-900"
+                } rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border ${
+                  darkMode ? "border-gray-700" : "border-gray-200"
+                }`}
+              >
+                {backspaceDisabled
+                  ? "Backspace is disabled"
+                  : "Backspace is enabled"}
+              </span>
+            </button>
 
             {/* Dark Mode toggle */}
             <button
