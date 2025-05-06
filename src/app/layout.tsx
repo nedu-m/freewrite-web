@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Lato } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,12 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-white">
-      <body
-        className={`${lato.variable} ${inter.variable} antialiased bg-white`}
-        style={{ backgroundColor: "white" }}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${lato.variable} ${inter.variable} antialiased`}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
