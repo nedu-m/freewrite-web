@@ -104,7 +104,7 @@ export default function Home() {
         }
       }
     }
-  }, [entries, selectedEntryId, text, currentFont, currentSize, pendingFocusEntryId]);
+  }, [entries, selectedEntryId, pendingFocusEntryId]);
 
   const placeholderOptions = [
     "Begin writing",
