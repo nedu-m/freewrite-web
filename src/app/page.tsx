@@ -67,6 +67,17 @@ export default function Home() {
       return;
     }
 
+    const placeholderOptions = [
+      "Begin writing",
+      "Pick a thought and go",
+      "Start typing",
+      "What's on your mind",
+      "Just start",
+      "Type your first thought",
+      "Start with one sentence",
+      "Just say it",
+    ];
+
     if (selectedEntryId === null) {
       setText("");
       setCurrentFont(DEFAULT_FONT_FAMILY);
@@ -103,18 +114,7 @@ export default function Home() {
         }
       }
     }
-  }, [entries, selectedEntryId, pendingFocusEntryId, placeholderOptions]);
-
-  const placeholderOptions = [
-    "Begin writing",
-    "Pick a thought and go",
-    "Start typing",
-    "What's on your mind",
-    "Just start",
-    "Type your first thought",
-    "Start with one sentence",
-    "Just say it",
-  ];
+  }, [entries, selectedEntryId, pendingFocusEntryId]);
 
   const fontOptions = [
     { name: "System", value: "system-ui" },
