@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "open-prod": "npm run start & (sleep 3 && open http://localhost:3000)"
   },
   "dependencies": {
     "@types/classnames": "^2.3.0",

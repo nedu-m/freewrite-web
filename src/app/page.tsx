@@ -68,9 +68,9 @@ export default function Home() {
     }
 
     if (selectedEntryId === null) {
-      if (text !== "") setText("");
-      if (currentFont !== DEFAULT_FONT_FAMILY) setCurrentFont(DEFAULT_FONT_FAMILY);
-      if (currentSize !== DEFAULT_FONT_SIZE) setCurrentSize(DEFAULT_FONT_SIZE);
+      setText("");
+      setCurrentFont(DEFAULT_FONT_FAMILY);
+      setCurrentSize(DEFAULT_FONT_SIZE);
       if (lastSavedTextRef.current !== "") lastSavedTextRef.current = "";
 
       if (entries.length > 0) {
@@ -86,16 +86,15 @@ export default function Home() {
 
       const entryToLoad = entries.find(e => e.id === selectedEntryId);
       if (entryToLoad) {
-        if (text !== entryToLoad.content) setText(entryToLoad.content);
+        setText(entryToLoad.content);
 
         const newFont = entryToLoad.font || DEFAULT_FONT_FAMILY;
-        if (currentFont !== newFont) setCurrentFont(newFont);
+        setCurrentFont(newFont);
 
         const newSize = entryToLoad.size || DEFAULT_FONT_SIZE;
-        if (currentSize !== newSize) setCurrentSize(newSize);
+        setCurrentSize(newSize);
 
         if (lastSavedTextRef.current !== entryToLoad.content) lastSavedTextRef.current = entryToLoad.content;
-
       } else {
         if (entries.length > 0) {
           setSelectedEntryId(entries[0].id!);
@@ -104,7 +103,7 @@ export default function Home() {
         }
       }
     }
-  }, [entries, selectedEntryId, pendingFocusEntryId]);
+  }, [entries, selectedEntryId, pendingFocusEntryId, placeholderOptions]);
 
   const placeholderOptions = [
     "Begin writing",
@@ -248,6 +247,9 @@ export default function Home() {
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setText(newText);
+    if (textAreaRef.current) {
+      textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
+    }
     if (selectedEntryId !== null) {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
@@ -672,7 +674,6 @@ export default function Home() {
           className={classNames(
             "w-full h-full p-8 md:p-12 lg:p-16 resize-none focus:outline-none transition-colors duration-300",
             darkMode ? 'bg-gray-800 text-gray-200 placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400',
-            { 'opacity-50': timerRunning && timeRemaining > 0 }
           )}
         />
       </div>
